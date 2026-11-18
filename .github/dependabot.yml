@@ -1,0 +1,13 @@
+# Еженедельные pull request с обновлением GitHub Actions в .github/workflows, включая закреплённые по SHA
+# (https://docs.github.com/code-security/dependabot/working-with-dependabot/keeping-your-actions-up-to-date-with-dependabot).
+# npm-пакеты обновляются вручную: у части из них версии ограничены намеренно.
+updates:
+  # Тип ci по Conventional Commits; двоеточие после префикса Dependabot добавляет сам.
+  - commit-message:
+      prefix: ci
+    # "/" — Dependabot сам проверяет файлы в .github/workflows.
+    directory: /
+    package-ecosystem: github-actions
+    schedule:
+      interval: weekly
+version: 2

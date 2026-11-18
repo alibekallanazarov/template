@@ -1,0 +1,97 @@
+# Конвейер GitHub Actions (https://docs.github.com/actions) — те же проверки, что в .gitlab-ci.yml. Ключи
+# упорядочены по алфавиту (yml/sort-keys в eslint.config.js); шаги выполняются в порядке объявления.
+
+# Новый коммит в ту же ветку или pull request отменяет устаревший запуск.
+concurrency:
+  cancel-in-progress: true
+  group: ${{ github.workflow }}-${{ github.ref }}
+
+env:
+  # Не устанавливаем Git-хуки при pnpm install в CI (https://typicode.github.io/husky/how-to.html).
+  HUSKY: 0
+
+# Окружение заданий — по документации pnpm (https://pnpm.io/continuous-integration#github-actions): pnpm/setup
+# ставит pnpm (версию из packageManager в package.json) и Node.js (версию из .nvmrc находит сам), кэширует
+# хранилище и выполняет pnpm install. Стороннее действие закреплено по SHA коммита
+# (https://docs.github.com/actions/reference/security/secure-use#using-third-party-actions).
+jobs:
+  # Сборка: pnpm build проверяет типы и собирает приложение. VITE_API_URL задаётся в переменных репозитория
+  # (Settings → Secrets and variables → Actions → Variables).
+  build:
+    env:
+      VITE_API_URL: ${{ vars.VITE_API_URL }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/setup@731dfb6463bbd11c11fd0ee11fe00ed0e36d48a1 # v3.2.0
+        with:
+          cache: true
+      - run: pnpm build
+      - uses: actions/upload-artifact@v7
+        with:
+          name: dist
+          path: dist
+          retention-days: 7
+
+  # Сообщения коммитов pull request (https://commitlint.js.org/guides/ci-setup.html): хук commit-msg
+  # обходится через git commit --no-verify, поэтому проверяем их и здесь. Pull request Dependabot пропускаем
+  # (условие — как в документации GitHub): в теле его коммитов ссылки длиннее 100 символов, а это нарушает
+  # body-max-line-length.
+  commitlint:
+    if: github.event_name == 'pull_request' && github.event.pull_request.user.login != 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          # Вся история: commitlint читает коммиты pull request через git.
+          fetch-depth: 0
+      - uses: pnpm/setup@731dfb6463bbd11c11fd0ee11fe00ed0e36d48a1 # v3.2.0
+        with:
+          cache: true
+      - env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: pnpm commitlint --from "$BASE_SHA" --to "$HEAD_SHA" --verbose
+
+  # Линтинг, форматирование и архитектура FSD; проверку типов выполняет build.
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/setup@731dfb6463bbd11c11fd0ee11fe00ed0e36d48a1 # v3.2.0
+        with:
+          cache: true
+      - run: pnpm lint
+      - run: pnpm format:check
+      - run: pnpm arch:check
+
+  # Unit- и browser-тесты. Упавшие тесты Vitest сам отмечает в pull request и сводке запуска: на GitHub Actions
+  # он включает репортер github-actions (https://vitest.dev/guide/reporters#github-actions-reporter).
+  test:
+    env:
+      # Тесты не обращаются к настоящему API (запросы перехватывает MSW), но vite.config.ts требует переменную.
+      VITE_API_URL: ''
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/setup@731dfb6463bbd11c11fd0ee11fe00ed0e36d48a1 # v3.2.0
+        with:
+          cache: true
+      # Chromium версии из pnpm-lock.yaml с системными зависимостями; кэшировать браузеры Playwright
+      # не рекомендует (https://playwright.dev/docs/ci#github-actions).
+      - run: pnpm browsers:install --with-deps
+      - run: pnpm test:run
+
+name: CI
+
+# Pull request и push в main; push в другие ветки проверяется через pull request, без дублей запусков.
+on:
+  # {} вместо пустого значения: пустые значения запрещает yml/no-empty-mapping-value.
+  pull_request: {}
+  push:
+    branches:
+      - main
+
+# Минимальные права GITHUB_TOKEN: заданиям нужно только чтение репозитория.
+permissions:
+  contents: read

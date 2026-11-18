@@ -1,0 +1,19 @@
+# Прерываем установку, если текущая версия Node.js не подходит под engines.node проекта (package.json)
+# или любой из зависимостей; без этой настройки pnpm только предупреждает.
+engineStrict: true
+# Что разрешено делать отдельным зависимостям при установке (pnpm 12.11+).
+permissions:
+  # skills — какие скиллы агентов из пакета pnpm связывает с каталогами скиллов проекта (.agents/skills
+  # и .claude/skills): true — все, список — только перечисленные (pnpm 12.18+).
+  '@tanstack/react-router':
+    # migrate-from-react-router не берём: он нужен только для перехода с React Router.
+    skills:
+      - react-router
+      - router-query
+  '@tanstack/router-plugin':
+    skills: true
+# Каталоги, в которые pnpm связывает скиллы, разрешённые зависимостям.
+skills:
+  dirs:
+    - .agents/skills
+    - .claude/skills
