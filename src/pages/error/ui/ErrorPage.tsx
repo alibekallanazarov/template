@@ -3,7 +3,8 @@ import { useEffect } from 'react'
 import { useQueryErrorResetBoundary } from '@tanstack/react-query'
 import { useRouter, type ErrorComponentProps } from '@tanstack/react-router'
 
-// Страница ошибки загрузки или рендера маршрута (https://tanstack.com/router/latest/docs/framework/react/guide/external-data-loading).
+// Страница ошибки загрузки или рендера маршрута
+// (https://tanstack.com/router/latest/docs/framework/react/guide/external-data-loading).
 // Показывается в корне, как NotFoundPage, поэтому и разметка как у неё.
 export function ErrorPage({ error }: Readonly<ErrorComponentProps>) {
   const queryErrorResetBoundary = useQueryErrorResetBoundary()
@@ -26,7 +27,8 @@ export function ErrorPage({ error }: Readonly<ErrorComponentProps>) {
               (https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/Reference/Roles/alert_role). */}
           <div className="flex flex-col gap-2" role="alert">
             <h1>Something went wrong</h1>
-            {/* Текст ошибки нужен разработчику; пользователю в продакшене он ничего не скажет и может раскрыть детали. */}
+            {/* Текст ошибки нужен разработчику; пользователю в продакшене он ничего не скажет
+                и может раскрыть детали. */}
             {import.meta.env.DEV && <pre>{error instanceof Error ? error.message : String(error)}</pre>}
           </div>
           {/* invalidate, а не reset из пропсов: перезапускает loader маршрута и сбрасывает границу ошибки. */}

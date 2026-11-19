@@ -96,7 +96,8 @@ export default defineConfig(({ mode }) => {
     // Дополнение: настройки Vitest.
     test: {
       coverage: {
-        // Не учитываем в покрытии объявления типов и сгенерированное дерево маршрутов; файлы тестов Vitest исключает сам.
+        // Не учитываем в покрытии объявления типов и сгенерированное дерево маршрутов;
+        // файлы тестов Vitest исключает сам.
         exclude: [
           'src/**/*.d.ts',
           'src/app/router/generatedRouteTree.ts',
@@ -125,7 +126,8 @@ export default defineConfig(({ mode }) => {
           optimizeDeps: {
             include: ['@tanstack/react-router', 'clsx', 'tailwind-merge', 'vitest-browser-react'],
           },
-          // Отдаём браузеру скрипт Service Worker для MSW без копии в public, поэтому в сборку приложения он не попадает.
+          // Отдаём браузеру скрипт Service Worker для MSW без копии в public,
+          // поэтому в сборку приложения он не попадает.
           // worker-only: worker создаём сами через setupWorker (src/mocks/browser.ts).
           plugins: [msw({ mode: 'worker-only' })],
           test: {
@@ -137,8 +139,9 @@ export default defineConfig(({ mode }) => {
               headless: true,
               instances: [{ browser: 'chromium' }],
               provider: playwright(),
-              // Скриншоты page.screenshot() сохраняем в игнорируемый git каталог, а не в __screenshots__ рядом с тестом:
-              // там лежат эталоны toMatchScreenshot, которые хранятся в репозитории. Скриншоты упавших тестов
+              // Скриншоты page.screenshot() сохраняем в игнорируемый git каталог,
+              // а не в __screenshots__ рядом с тестом: там лежат эталоны toMatchScreenshot,
+              // которые хранятся в репозитории. Скриншоты упавших тестов
               // Vitest сам кладёт в attachmentsDir (.vitest/attachments), эта опция на них не влияет.
               screenshotDirectory: '.vitest/screenshots',
             },
