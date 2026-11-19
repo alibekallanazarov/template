@@ -96,3 +96,7 @@ GitHub (Settings → Secrets and variables → Actions → Variables): без н
 ## Правила разработки
 
 Подробные правила кода, тестов и конфигураций — в [AGENTS.md](AGENTS.md).
+
+## Лицензия
+
+[MIT](LICENSE)
