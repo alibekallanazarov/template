@@ -1,6 +1,7 @@
 import path from 'node:path'
 
 import js from '@eslint/js'
+import stylistic from '@stylistic/eslint-plugin'
 import pluginQuery from '@tanstack/eslint-plugin-query'
 import pluginRouter from '@tanstack/eslint-plugin-router'
 import vitest from '@vitest/eslint-plugin'
@@ -274,4 +275,14 @@ export default defineConfig([
   // prettier-конфигами самих плагинов.
   jsonc.configs.prettier,
   yml.configs.prettier,
+  {
+    // Дополнение: Prettier не переносит комментарии, строки и регулярные выражения, поэтому их длину проверяем здесь.
+    // Стоит после eslint-config-prettier, который это правило отключает.
+    files: ['**/*.{cjs,js,mjs,ts,tsx}'],
+    plugins: { '@stylistic': stylistic },
+    rules: {
+      // Дополнение: длина совпадает с printWidth в Prettier; URL не разбить, поэтому строки с ним не проверяем.
+      '@stylistic/max-len': ['error', { code: 120, ignoreUrls: true }],
+    },
+  },
 ])
